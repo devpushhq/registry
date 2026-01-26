@@ -1,0 +1,8 @@
+# syntax=docker/dockerfile:1
+#
+# This is not built directly. It documents the common runner contract:
+# - root entrypoint that maps PUID/PGID to appuser/appgroup, then drops privileges
+# - /app as working directory
+#
+# Each runner Dockerfile copies `runners/_common/entrypoint.sh` and ensures
+# `gosu` is installed and `appuser/appgroup` exist.
