@@ -116,7 +116,9 @@ jobs:
           file: runners/${{ matrix.runner }}/Dockerfile
           platforms: linux/amd64
           push: true
-          tags: ghcr.io/${{ github.repository_owner }}/runner-${{ matrix.runner }}:${{ needs.plan.outputs.version }}
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/runner-${{ matrix.runner }}:${{ needs.plan.outputs.version }}
+            ghcr.io/${{ github.repository_owner }}/runner-${{ matrix.runner }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -146,3 +148,4 @@ jobs:
           src="ghcr.io/${{ github.repository_owner }}/runner-${{ matrix.runner }}:${{ needs.plan.outputs.prev_version }}"
           dst="ghcr.io/${{ github.repository_owner }}/runner-${{ matrix.runner }}:${{ needs.plan.outputs.version }}"
           docker buildx imagetools create -t "$dst" "$src"
+          docker buildx imagetools create -t "ghcr.io/${{ github.repository_owner }}/runner-${{ matrix.runner }}:latest" "$dst"
