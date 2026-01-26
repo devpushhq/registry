@@ -86,11 +86,20 @@ jobs:
   build-and-push:
     needs: plan
     if: needs.plan.outputs.changed_all == 'true' || needs.plan.outputs.build_runners != '[]'
-    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         runner: ${{ fromJson(needs.plan.outputs.build_runners) }}
+        arch: [amd64, arm64]
+        include:
+          - arch: amd64
+            platform: linux/amd64
+            runs_on: ubuntu-latest
+          - arch: arm64
+            platform: linux/arm64
+            runs_on: ubuntu-24.04-arm
+
+    runs-on: ${{ matrix.runs_on }}
 
     steps:
       - name: Checkout
@@ -114,13 +123,42 @@ jobs:
         with:
           context: .
           file: runners/${{ matrix.runner }}/Dockerfile
-          platforms: linux/amd64
+          platforms: ${{ matrix.platform }}
           push: true
-          tags: |
-            ghcr.io/${{ github.repository_owner }}/runner-${{ matrix.runner }}:${{ needs.plan.outputs.version }}
-            ghcr.io/${{ github.repository_owner }}/runner-${{ matrix.runner }}:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          tags: ghcr.io/${{ github.repository_owner }}/runner-${{ matrix.runner }}:${{ needs.plan.outputs.version }}-${{ matrix.arch }}
+          cache-from: type=gha,scope=${{ matrix.runner }}-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.runner }}-${{ matrix.arch }}
+
+  manifest-built:
+    needs: [plan, build-and-push]
+    if: needs.plan.outputs.changed_all == 'true' || needs.plan.outputs.build_runners != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: ${{ fromJson(needs.plan.outputs.build_runners) }}
+
+    steps:
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create multi-arch manifest
+        run: |
+          set -eu
+          image="ghcr.io/${{ github.repository_owner }}/runner-${{ matrix.runner }}"
+          version="${{ needs.plan.outputs.version }}"
+          docker buildx imagetools create \
+            -t "${image}:${version}" \
+            -t "${image}:latest" \
+            "${image}:${version}-amd64" \
+            "${image}:${version}-arm64"
 
   retag-unchanged:
     needs: plan
