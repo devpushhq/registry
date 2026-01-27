@@ -193,7 +193,12 @@ jobs:
             print(f"image '{image}' has no tag suffix", file=sys.stderr)
             sys.exit(1)
 
-          print(f"tag={tag}")
+          output_path = os.environ.get("GITHUB_OUTPUT")
+          if not output_path:
+            print(f"tag={tag}")
+          else:
+            with open(output_path, "a", encoding="utf-8") as fh:
+              fh.write(f"tag={tag}\n")
           PY
         env:
           SLUG: ${{ matrix.runner }}
@@ -265,7 +270,12 @@ jobs:
             print(f"image '{image}' has no tag suffix", file=sys.stderr)
             sys.exit(1)
 
-          print(f"tag={tag}")
+          output_path = os.environ.get("GITHUB_OUTPUT")
+          if not output_path:
+            print(f"tag={tag}")
+          else:
+            with open(output_path, "a", encoding="utf-8") as fh:
+              fh.write(f"tag={tag}\n")
           PY
         env:
           SLUG: ${{ matrix.runner }}
@@ -356,8 +366,14 @@ jobs:
             print(f"runner '{slug}' missing tag in manifest image", file=sys.stderr)
             sys.exit(1)
 
-          print(f"cur_tag={cur_tag}")
-          print(f"prev_tag={prev_tag}")
+          output_path = os.environ.get("GITHUB_OUTPUT")
+          if not output_path:
+            print(f"cur_tag={cur_tag}")
+            print(f"prev_tag={prev_tag}")
+          else:
+            with open(output_path, "a", encoding="utf-8") as fh:
+              fh.write(f"cur_tag={cur_tag}\n")
+              fh.write(f"prev_tag={prev_tag}\n")
           PY
         env:
           SLUG: ${{ matrix.runner }}
