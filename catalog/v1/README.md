@@ -1,7 +1,7 @@
 This folder contains the published catalog for schema major v1.
 
 Files:
-- `manifest.json`: the latest catalog (single source of truth for v1).
+- `catalog.json`: the latest catalog (single source of truth for v1).
 
 Format (high level):
 - `meta`: minimal metadata about the catalog.

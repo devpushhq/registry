@@ -83,13 +83,13 @@ jobs:
           printf "build_runners=%s\n" "$BUILD_JSON" >> "$GITHUB_OUTPUT"
           printf "retag_runners=%s\n" "$RETAG_JSON" >> "$GITHUB_OUTPUT"
 
-      - name: Validate manifest runner tags
+      - name: Validate catalog runner tags
         run: |
           set -eu
           python3 - <<'PY'
           import json, os, subprocess, sys
           import glob
-          manifest_paths = sorted(glob.glob("catalog/*/manifest.json"))
+          catalog_paths = sorted(glob.glob("catalog/*/catalog.json"))
 
           prev = os.environ.get("PREV_VERSION", "")
           if not prev:
@@ -104,25 +104,25 @@ jobs:
           if not changed:
             sys.exit(0)
 
-          for manifest_path in manifest_paths:
-            # Load previous manifest from the tag if it existed.
-            refs = f"refs/tags/{prev}:{manifest_path}"
+          for catalog_path in catalog_paths:
+            # Load previous catalog from the tag if it existed.
+            refs = f"refs/tags/{prev}:{catalog_path}"
             try:
               prev_raw = subprocess.check_output(["git", "show", refs], text=True)
-              prev_manifest = json.loads(prev_raw)
+              prev_catalog = json.loads(prev_raw)
             except subprocess.CalledProcessError:
               # New catalog added in this release; skip tag-change validation.
               continue
 
-            with open(manifest_path, "r", encoding="utf-8") as fh:
+            with open(catalog_path, "r", encoding="utf-8") as fh:
               cur = json.load(fh)
 
-            prev_runners = {r["slug"]: r.get("image") for r in prev_manifest.get("runners", [])}
+            prev_runners = {r["slug"]: r.get("image") for r in prev_catalog.get("runners", [])}
             cur_runners = {r["slug"]: r.get("image") for r in cur.get("runners", [])}
 
             missing = [c for c in changed if c not in cur_runners]
             if missing:
-              print(f"{manifest_path} missing changed runners: {', '.join(missing)}", file=sys.stderr)
+              print(f"{catalog_path} missing changed runners: {', '.join(missing)}", file=sys.stderr)
               sys.exit(1)
 
             bad = []
@@ -131,7 +131,7 @@ jobs:
                 bad.append(slug)
             if bad:
               print(
-                f"{manifest_path} must update image tag for changed runners: "
+                f"{catalog_path} must update image tag for changed runners: "
                 + ", ".join(bad),
                 file=sys.stderr,
               )
@@ -171,8 +171,8 @@ jobs:
           import json, os, sys
 
           slug = os.environ["SLUG"]
-          manifest_path = "catalog/v1/manifest.json"
-          with open(manifest_path, "r", encoding="utf-8") as fh:
+          catalog_path = "catalog/v1/catalog.json"
+          with open(catalog_path, "r", encoding="utf-8") as fh:
             data = json.load(fh)
 
           image = None
@@ -181,7 +181,7 @@ jobs:
               image = runner.get("image")
               break
           if not image:
-            print(f"runner '{slug}' not found in {manifest_path}", file=sys.stderr)
+            print(f"runner '{slug}' not found in {catalog_path}", file=sys.stderr)
             sys.exit(1)
 
           if "@" in image:
@@ -227,7 +227,7 @@ jobs:
           cache-from: type=gha,scope=${{ matrix.runner }}-${{ matrix.arch }}
           cache-to: type=gha,mode=max,scope=${{ matrix.runner }}-${{ matrix.arch }}
 
-  manifest-built:
+  catalog-built:
     needs: [plan, build-and-push]
     if: needs.plan.outputs.changed_all == 'true' || needs.plan.outputs.build_runners != '[]'
     runs-on: ubuntu-latest
@@ -248,8 +248,8 @@ jobs:
           import json, os, sys
 
           slug = os.environ["SLUG"]
-          manifest_path = "catalog/v1/manifest.json"
-          with open(manifest_path, "r", encoding="utf-8") as fh:
+          catalog_path = "catalog/v1/catalog.json"
+          with open(catalog_path, "r", encoding="utf-8") as fh:
             data = json.load(fh)
 
           image = None
@@ -258,7 +258,7 @@ jobs:
               image = runner.get("image")
               break
           if not image:
-            print(f"runner '{slug}' not found in {manifest_path}", file=sys.stderr)
+            print(f"runner '{slug}' not found in {catalog_path}", file=sys.stderr)
             sys.exit(1)
 
           if "@" in image:
@@ -290,7 +290,7 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create multi-arch manifest
+      - name: Create multi-arch catalog image
         run: |
           set -eu
           image="ghcr.io/${{ github.repository_owner }}/runner-${{ matrix.runner }}"
@@ -323,9 +323,9 @@ jobs:
 
           slug = os.environ["SLUG"]
           prev = os.environ["PREV_VERSION"]
-          manifest_path = "catalog/v1/manifest.json"
+          catalog_path = "catalog/v1/catalog.json"
 
-          with open(manifest_path, "r", encoding="utf-8") as fh:
+          with open(catalog_path, "r", encoding="utf-8") as fh:
             cur = json.load(fh)
 
           cur_image = None
@@ -334,23 +334,23 @@ jobs:
               cur_image = runner.get("image")
               break
           if not cur_image:
-            print(f"runner '{slug}' not found in {manifest_path}", file=sys.stderr)
+            print(f"runner '{slug}' not found in {catalog_path}", file=sys.stderr)
             sys.exit(1)
 
           try:
-            prev_raw = subprocess.check_output(["git", "show", f"refs/tags/{prev}:{manifest_path}"], text=True)
-            prev_manifest = json.loads(prev_raw)
+            prev_raw = subprocess.check_output(["git", "show", f"refs/tags/{prev}:{catalog_path}"], text=True)
+            prev_catalog = json.loads(prev_raw)
           except subprocess.CalledProcessError as exc:
-            print(f"failed to load previous manifest for tag '{prev}': {exc}", file=sys.stderr)
+            print(f"failed to load previous catalog for tag '{prev}': {exc}", file=sys.stderr)
             sys.exit(1)
 
           prev_image = None
-          for runner in prev_manifest.get("runners", []):
+          for runner in prev_catalog.get("runners", []):
             if runner.get("slug") == slug:
               prev_image = runner.get("image")
               break
           if not prev_image:
-            print(f"runner '{slug}' not found in previous manifest", file=sys.stderr)
+            print(f"runner '{slug}' not found in previous catalog", file=sys.stderr)
             sys.exit(1)
 
           def tag_from(image):
@@ -363,7 +363,7 @@ jobs:
           cur_tag = tag_from(cur_image)
           prev_tag = tag_from(prev_image)
           if not cur_tag or not prev_tag:
-            print(f"runner '{slug}' missing tag in manifest image", file=sys.stderr)
+            print(f"runner '{slug}' missing tag in catalog image", file=sys.stderr)
             sys.exit(1)
 
           output_path = os.environ.get("GITHUB_OUTPUT")
