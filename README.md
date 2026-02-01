@@ -1,27 +1,79 @@
 # /dev/push registry
 
-This repository contains:
-- The published registry catalog (`catalog/`), served as static JSON files.
+This repo is the registry for /dev/push:
+- The published catalog (`catalog/`), served as static JSON.
 - Docker build contexts for official runner images (`runners/`).
 
-The minimal "API" is just fetching the latest compatible catalog file, for example:
-- `catalog/v1/catalog.json` (latest v1 catalog)
+There is no custom API service. Clients fetch the catalog from a static URL,
+for example:
+- `https://raw.githubusercontent.com/devpushhq/registry/main/catalog/v1/catalog.json` (latest v1 catalog)
 
 Instances can ship with a bundled catalog and optionally sync from this repo.
 
-## Image namespace
+## Catalog format
+
+The catalog is a JSON file with:
+- `meta`: version and source metadata.
+- `runners`: list of runner definitions (slug, name, category, image).
+- `presets`: list of preset definitions (slug, name, category, config).
+
+The schema is documented in `catalog/v1/README.md`.
+
+## Image namespace and tags
 
 Runner images are published to GitHub Container Registry under the repo owner
 namespace, e.g. `ghcr.io/devpushhq/runner-go-1.25:1.0.0`.
 
-## Tag strategy
-
-- Runner images use per-runner tags in `catalog/v1/catalog.json` and may differ from the catalog tag.
-- If a runner Dockerfile changes, its image tag must be bumped in the catalog (workflow enforces this).
+Tag strategy:
+- Runner images use per-runner tags in `catalog/v1/catalog.json` and may differ
+  from the catalog tag.
+- If a runner Dockerfile changes, its image tag must be bumped in the catalog
+  (workflow enforces this).
 - `:latest` is published for convenience and points at the newest release.
+
+## Adding a runner image
+
+1) Create a runner folder:
+```
+runners/<slug>/
+  Dockerfile
+```
+
+2) Base image and entrypoint:
+- Copy and use the shared entrypoint from `runners/_common/entrypoint.sh`.
+- Ensure `/app`, `/data`, and `/cache` exist (the entrypoint expects them).
+- Set `WORKDIR /app`.
+
+3) Required runtime behavior:
+- The image must start as root and drop to `appuser` via the entrypoint.
+- The entrypoint handles UID/GID remapping using `SERVICE_UID` / `SERVICE_GID`.
+- The runner must be able to run user commands in `/app` and read/write
+  `/data` and `/cache`.
+
+4) Update the catalog:
+- Add the runner entry to `catalog/v1/catalog.json` with the image tag.
+- If this is a new runner, include it in presets as needed.
+
+5) Build and publish:
+- Push a git tag (e.g. `1.0.0`) to trigger the GitHub Actions workflow.
+
+## Local testing
+
+Build locally:
+```
+docker build -t local/runner-<slug>:dev runners/<slug>
+```
+
+Run:
+```
+docker run --rm -it \
+  -e SERVICE_UID=$(id -u) \
+  -e SERVICE_GID=$(id -g) \
+  -v "$PWD":/app \
+  local/runner-<slug>:dev
+```
 
 ## Publishing
 
-This repo does not need a custom API service; it can be served via raw GitHub
-URLs or GitHub Pages. Runner images are built/pushed by GitHub Actions when you
-push a tag like `1.0.0`.
+This repo can be served via raw GitHub URLs or GitHub Pages. Runner images are
+built/pushed by GitHub Actions when you push a tag like `1.0.0`.

@@ -6,7 +6,7 @@ Files:
 Format (high level):
 - `meta`: minimal metadata about the catalog.
   - `version`: catalog release version.
-  - `source`: `registry` for published catalogs.
+  - `source`: `registry` for published catalogs, `bundled` for the copy shipped with /dev/push.
 - `runners[]`: list of runnable images.
   - `slug`, `name`, `category`, `image` (full image ref with tag).
 - `presets[]`: list of detection/commands presets.

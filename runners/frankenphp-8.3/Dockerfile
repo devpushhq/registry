@@ -6,7 +6,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 HEALTHCHECK NONE
 
-# Remove app/data directories created by the upstream image. DevPush binds `/app`
+# Remove app/data directories created by the upstream image. /dev/push binds `/app`
 # from the host, and we keep runtime state out of `/data`.
 RUN rm -rf /app /data
 

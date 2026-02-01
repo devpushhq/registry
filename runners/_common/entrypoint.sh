@@ -33,9 +33,9 @@ fi
 
 if [[ -n "$PUID" ]]; then
   # Allow non-unique IDs: some base images already contain UID 1000 (e.g. `node`).
-  usermod -o -u "$PUID" -g "$run_group" "$APP_USER" 2>/dev/null || true
+  usermod -o -u "$PUID" -g "$run_group" "$APP_USER" >/dev/null 2>&1 || true
 else
-  usermod -g "$run_group" "$APP_USER" 2>/dev/null || true
+  usermod -g "$run_group" "$APP_USER" >/dev/null 2>&1 || true
 fi
 
 install -d -m 0755 -o "$APP_USER" -g "$run_group" "/home/$APP_USER" /app /cache
