@@ -53,6 +53,9 @@ runners/<slug>/
 4) Update the catalog:
 - Add the runner entry to `catalog/v1/catalog.json` with the image tag.
 - If this is a new runner, include it in presets as needed.
+- If a runner Dockerfile changes (or `_common/entrypoint.sh` changes), bump the
+  image tag for that runner in the catalog. An entrypoint change requires
+  bumping *all* runner image tags.
 
 5) Build and publish:
 - Push a git tag (e.g. `1.0.0`) to trigger the GitHub Actions workflow.
@@ -77,3 +80,19 @@ docker run --rm -it \
 
 This repo can be served via raw GitHub URLs or GitHub Pages. Runner images are
 built/pushed by GitHub Actions when you push a tag like `1.0.0`.
+
+## Build rules (what triggers builds)
+
+The workflow only runs on tag pushes that match `*.*.*` (e.g. `1.0.1`).
+It computes a build plan from git diff vs the previous tag:
+
+- If `runners/_common/**` changes, *all* runners are rebuilt.
+- If a specific runner folder changes, only that runner is rebuilt.
+- If no runner folders changed, runners are **retagged** from the previous
+  release (no rebuild).
+
+Catalog enforcement:
+- For any runner that is rebuilt, the image tag **must** change in
+  `catalog/v1/catalog.json` or the workflow fails.
+- If you touched `_common/entrypoint.sh`, you must bump **every** runner image
+  tag in the catalog.
