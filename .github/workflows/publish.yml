@@ -22,7 +22,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-tags: true
 
       - name: Compute build plan
         id: plan
@@ -163,7 +163,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-tags: true
 
       - name: Resolve runner tag
         id: tag
@@ -242,7 +242,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-tags: true
 
       - name: Resolve runner tag
         id: tag
@@ -317,6 +317,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-tags: true
 
       - name: Resolve runner tags
         id: tags
