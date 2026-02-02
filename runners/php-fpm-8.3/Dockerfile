@@ -61,6 +61,7 @@ RUN printf '%s\n' \
     printf '%s\n' \
       '[global]' \
       'pid = /tmp/php-fpm.pid' \
+      'error_log = /tmp/php-fpm-error.log' \
     > /usr/local/etc/php-fpm.d/zz-devpush-global.conf
 
 # Default Caddy config.
