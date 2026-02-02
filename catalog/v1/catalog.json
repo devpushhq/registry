@@ -1,6 +1,6 @@
 {
   "meta": {
-    "version": "1.0.2",
+    "version": "1.0.3",
     "source": "registry"
   },
   "runners": [
@@ -38,13 +38,13 @@
       "slug": "php-fpm-8.3",
       "name": "PHP-FPM 8.3 + Caddy",
       "category": "PHP",
-      "image": "ghcr.io/devpushhq/runner-php-fpm-8.3:1.0.2"
+      "image": "ghcr.io/devpushhq/runner-php-fpm-8.3:1.0.3"
     },
     {
       "slug": "php-fpm-node-8.3",
       "name": "PHP-FPM 8.3 + Caddy + Node 22",
       "category": "PHP",
-      "image": "ghcr.io/devpushhq/runner-php-fpm-node-8.3:1.0.2"
+      "image": "ghcr.io/devpushhq/runner-php-fpm-node-8.3:1.0.3"
     },
     {
       "slug": "frankenphp-8.3",

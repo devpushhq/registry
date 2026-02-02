@@ -56,6 +56,7 @@ RUN printf '%s\n' \
       'user = appuser' \
       'group = appgroup' \
       'listen = 127.0.0.1:9000' \
+      'access.log = /tmp/php-fpm-access.log' \
       'clear_env = no' \
     > /usr/local/etc/php-fpm.d/zz-devpush.conf && \
     printf '%s\n' \
