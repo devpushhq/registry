@@ -79,7 +79,7 @@ RUN printf '%s\n' \
 RUN install -d -m 0755 /etc/caddy && \
     printf '%s\n' \
       ':8000' \
-      'root * /app/public' \
+      'root * {$DEVPUSH_APP_ROOT:/app/public}' \
       'encode zstd gzip' \
       'php_fastcgi 127.0.0.1:9000' \
       'file_server' \

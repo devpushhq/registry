@@ -63,7 +63,7 @@ RUN install -d -m 0755 /etc/caddy && \
   admin off
 }
 :8000 {
-  root * /app/public
+  root * {$DEVPUSH_APP_ROOT:/app/public}
   encode zstd gzip
   php_server
 }
