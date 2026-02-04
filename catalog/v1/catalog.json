@@ -1,6 +1,6 @@
 {
   "meta": {
-    "version": "1.0.4",
+    "version": "1.0.5",
     "source": "registry"
   },
   "runners": [
@@ -298,7 +298,7 @@
       "config": {
         "runner": "frankenphp-8.3",
         "build_command": "composer install --no-dev --optimize-autoloader --no-interaction --no-progress",
-        "pre_deploy_command": "",
+        "pre_deploy_command": "(./vendor/bin/drush status --field=bootstrap 2>/dev/null | grep -q Successful || ./vendor/bin/drush site:install -y) && ./vendor/bin/drush updatedb -y && ([ -f config/sync/core.extension.yml ] && ./vendor/bin/drush config:import -y || true) && ./vendor/bin/drush cache:rebuild",
         "start_command": "DEVPUSH_APP_ROOT=/app/web frankenphp run --config /etc/caddy/Caddyfile --adapter caddyfile",
         "detection": {
           "priority": 90,
