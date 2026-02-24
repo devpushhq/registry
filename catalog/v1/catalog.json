@@ -23,6 +23,12 @@
       "image": "ghcr.io/devpushhq/runner-node-20:1.0.1"
     },
     {
+      "slug": "node-24",
+      "name": "Node.js 24",
+      "category": "Node.js",
+      "image": "ghcr.io/devpushhq/runner-node-24:1.0.0"
+    },
+    {
       "slug": "bun-1.3",
       "name": "Bun 1.3",
       "category": "Bun",
