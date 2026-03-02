@@ -1,6 +1,6 @@
 {
   "meta": {
-    "version": "1.0.7",
+    "version": "1.0.8",
     "source": "registry"
   },
   "runners": [
@@ -20,13 +20,13 @@
       "slug": "node-20",
       "name": "Node.js 20",
       "category": "Node.js",
-      "image": "ghcr.io/devpushhq/runner-node-20:1.0.1"
+      "image": "ghcr.io/devpushhq/runner-node-20:1.0.2"
     },
     {
       "slug": "node-24",
       "name": "Node.js 24",
       "category": "Node.js",
-      "image": "ghcr.io/devpushhq/runner-node-24:1.0.0"
+      "image": "ghcr.io/devpushhq/runner-node-24:1.0.1"
     },
     {
       "slug": "bun-1.3",

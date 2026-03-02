@@ -28,7 +28,11 @@ WORKDIR /app
 
 ENV NPM_CONFIG_CACHE=/cache/npm
 ENV NPM_CONFIG_PREFIX=/cache/npm-prefix
-ENV PATH=/cache/npm-prefix/bin:$PATH
+ENV PNPM_HOME=/cache/pnpm
+ENV PNPM_STORE_DIR=/cache/pnpm-store
+ENV PATH=/cache/npm-prefix/bin:/cache/pnpm:$PATH
 ENV HOME=/home/appuser
+
+RUN corepack enable
 
 ENTRYPOINT ["/entrypoint.sh"]
